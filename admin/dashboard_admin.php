@@ -13,6 +13,9 @@ if (!isset($conn) || $conn === null) {
 $totalBuku = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM buku"))['total'];
 $totalSiswa = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM siswa"))['total'];
 $totalPinjam = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM transaksi WHERE status='dipinjam'"))['total'];
+
+// Get recent books for dashboard
+$recentBooks = mysqli_query($conn, "SELECT * FROM buku ORDER BY created_at DESC LIMIT 5");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -153,6 +156,84 @@ $totalPinjam = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total 
             font-size: 0.8rem;
             font-weight: 600;
         }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        .book-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .book-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        .book-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+        .book-info h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        .book-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .book-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-edit {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-edit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+        .btn-view-all {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .btn-view-all:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        .empty {
+            text-align: center;
+            color: #87bac3;
+            padding: 40px;
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
@@ -207,6 +288,34 @@ $totalPinjam = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total 
                 <h3>Laporan</h3>
                 <p>Lihat laporan transaksi dan statistik</p>
             </a>
+        </div>
+        
+        <div class="card">
+            <h3>📚 Buku Terbaru</h3>
+            <div class="book-list">
+                <?php if (mysqli_num_rows($recentBooks) > 0): ?>
+                    <?php while ($book = mysqli_fetch_assoc($recentBooks)): ?>
+                    <div class="book-item">
+                        <div class="book-info">
+                            <h4><?php echo htmlspecialchars($book['judul']); ?></h4>
+                            <p>📖 Kode: <?php echo htmlspecialchars($book['kode_buku']); ?> | 
+                               ✍️ <?php echo htmlspecialchars($book['pengarang']); ?> | 
+                               📦 Stok: <?php echo $book['stok']; ?></p>
+                        </div>
+                        <div class="book-actions">
+                            <a href="admin/edit_buku.php?id=<?php echo $book['id_buku']; ?>" class="btn-edit">✏️ Edit</a>
+                        </div>
+                    </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <div class="empty">
+                        <p>📚 Belum ada buku yang ditambahkan</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="admin/buku.php" class="btn-view-all">📖 Lihat Semua Buku</a>
+            </div>
         </div>
     </div>
 </body>

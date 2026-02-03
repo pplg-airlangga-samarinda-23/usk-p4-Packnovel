@@ -179,6 +179,7 @@ $students = mysqli_query($conn, "SELECT * FROM siswa ORDER BY created_at DESC");
                         <td><?php echo $row['telepon']; ?></td>
                         <td class="status-<?php echo $row['status']; ?>"><?php echo ucfirst($row['status']); ?></td>
                         <td>
+                            <a href="edit_siswa.php?id=<?php echo $row['id_siswa']; ?>" class="btn-edit">✏️ Edit</a>
                             <a href="?toggle=<?php echo $row['id_siswa']; ?>" class="btn-toggle">Toggle</a>
                             <a href="?delete=<?php echo $row['id_siswa']; ?>" class="btn-delete" onclick="return confirm('Yakin hapus?')">Hapus</a>
                         </td>

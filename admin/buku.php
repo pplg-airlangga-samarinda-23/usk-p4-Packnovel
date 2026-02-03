@@ -13,10 +13,30 @@ if (!isset($_SESSION['admin_id'])) {
 $message = '';
 $messageType = '';
 
+// Function to generate automatic book code
+function generateKodeBuku($conn) {
+    // Get the highest existing book code
+    $query = "SELECT kode_buku FROM buku WHERE kode_buku LIKE 'BK%' ORDER BY kode_buku DESC LIMIT 1";
+    $result = mysqli_query($conn, $query);
+    
+    if ($result && mysqli_num_rows($result) > 0) {
+        $last_kode = mysqli_fetch_assoc($result)['kode_buku'];
+        // Extract number from BK001 format
+        $number = intval(substr($last_kode, 2));
+        $new_number = $number + 1;
+    } else {
+        $new_number = 1;
+    }
+    
+    // Format as BK001, BK002, etc.
+    return 'BK' . str_pad($new_number, 3, '0', STR_PAD_LEFT);
+}
+
 // Handle Create
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] == 'create') {
-        $kode = mysqli_real_escape_string($conn, $_POST['kode_buku']);
+        // Generate automatic kode buku
+        $kode = generateKodeBuku($conn);
         $judul = mysqli_real_escape_string($conn, $_POST['judul']);
         $pengarang = mysqli_real_escape_string($conn, $_POST['pengarang']);
         $penerbit = mysqli_real_escape_string($conn, $_POST['penerbit']);
@@ -28,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                   VALUES ('$kode', '$judul', '$pengarang', '$penerbit', '$tahun', '$kategori', $stok)";
         
         if (mysqli_query($conn, $query)) {
-            $message = 'Buku berhasil ditambahkan!';
+            $message = "Buku berhasil ditambahkan dengan kode: $kode";
             $messageType = 'success';
         } else {
             $message = 'Error: ' . mysqli_error($conn);
@@ -138,12 +158,13 @@ $books = mysqli_query($conn, "SELECT * FROM buku ORDER BY created_at DESC");
                 <input type="hidden" name="action" value="create">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Kode Buku</label>
-                        <input type="text" name="kode_buku" required placeholder="BK001">
+                        <label>Kode Buku (Otomatis)</label>
+                        <input type="text" value="<?php echo generateKodeBuku($conn); ?>" readonly style="background: #f8f9fa; color: #6c757d;">
+                        <small style="color: #6c757d; font-size: 0.85rem;">Kode buku akan dibuat otomatis</small>
                     </div>
                     <div class="form-group">
-                        <label>Judul Buku</label>
-                        <input type="text" name="judul" required placeholder="Masukkan judul">
+                        <label>Judul Buku *</label>
+                        <input type="text" name="judul" required placeholder="Masukkan judul buku">
                     </div>
                     <div class="form-group">
                         <label>Pengarang</label>
